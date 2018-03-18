@@ -14,7 +14,7 @@
 #
 import os
 import sys
-sys.path.insert(0, 'C:\Projects\pip\dblapi')
+sys.path.insert(0, os.path.abspath('..'))
 
 on_rtd = os.getenv('READTHEDOCS') == 'True'
 
