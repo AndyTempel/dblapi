@@ -93,7 +93,7 @@ class Client:
     async def __get_info(self):
         await self.bot.wait_until_ready()
         self.bot_id = self.bot.user.id
-        log.debug(f"Got Bot user ID: {self.bot_id}")
+        log.debug("Got Bot user ID: " + str(self.bot_id))
         # log.info("Connecting to DBL and gathering information ...")
 
     async def __update_bot_stats(self):
