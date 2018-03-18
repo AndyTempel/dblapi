@@ -51,7 +51,7 @@ class Client:
 
     Parameters
     -------------
-    api_key: str
+    api_key: :class:`str`
         Your DBL bot token.
     bot: Bot or AutoShardedBot
         Your bot client from discord.py
@@ -71,6 +71,7 @@ class Client:
         Specify how many days to look up votes. Defaults to 31.
 
     """
+
     def __init__(self, api_key: str, bot: Bot or AutoShardedBot, disable_stats: bool = False, ssl_verify: bool = True,
                  **kwargs):
         self.api_key = api_key
@@ -120,14 +121,15 @@ class Client:
 
         Parameters
         -------------
-        api_key: str
+        api_key: :class:`str`
             Your DBL bot token.
-        bot: Bot or AutoShardedBot
+        bot: discord.ext.commands.Bot or discord.ext.commands.AutoShardedBot
             Your bot client from discord.py
 
 
         .. note::
             Takes the same parameters as :class:`Client` class.
+            Usage changes to ``bot.dbl``. (``bot`` is your bot client variable)
 
         """
         try:
@@ -149,7 +151,7 @@ class Client:
             Specify user you want to check.
 
 
-        :return: bool
+        :return: :class:`bool`
         """
         if isinstance(user, discord.User) or isinstance(user, discord.Member):
             user = user.id
@@ -161,16 +163,16 @@ class Client:
     async def iter_users_that_voted(self, iterable: bool = True):
         """|coro|
 
-        If iterable parameter is True or not set outputs iterable for all users that have voted. If parameter set to False, returns list.
+        If iterable parameter is True or not set outputs iterable for all users that have voted. If parameter set to False, returns :class:`list` of :class:`discord.User`.
 
 
         Parameters
         --------------
-        iterable: bool
+        iterable: :class:`bool`
             Should this function output an iterable.
 
 
-        :return: list
+        :return: :class:`list`
         """
         if iterable:
             for user in await self.voting_cache.get:
@@ -182,7 +184,7 @@ class Client:
                           fields: str = None) -> list:
         """|coro|
 
-        Search function for bots. Use search parameter to search for bots. This function returns DBLBot object.
+        Search function for bots. Use search parameter to search for bots. This function returns :class:`list` of :class:`DBLBot` objects.
 
 
         Parameters
@@ -204,7 +206,7 @@ class Client:
             Search specified comma-separated fields.
 
 
-        :return: list
+        :return: :class:`list`
         """
         params = {
             "search": search,
@@ -224,16 +226,16 @@ class Client:
     async def get_bot(self, bot_id: int) -> DBLBot:
         """|coro|
 
-        Returns :class:`DBLBot` class of the specified bot ID.
+        Returns :class:`dblapi.data_objects.DBLBot` class of the specified bot ID.
 
 
         Parameters
         --------------
-        bot_id: int
-            Bot ID
+        bot_id: :class:`int`
+            Bot's Client ID
 
 
-        :return: DBLBot
+        :return: :class:`dblapi.data_objects.DBLBot`
         """
         r = await self.http.get(self.router.bot_get.format_url(bot_id))
         return DBLBot.parse(r, self)
@@ -246,11 +248,11 @@ class Client:
 
         Parameters
         --------------
-        bot_id: int
-            Bot ID
+        bot_id: :class:`int`
+            Bot's Client ID
 
 
-        :return: DBLStats
+        :return: :class:`dblapi.data_objects.DBLStats`
         """
         r = await self.http.get(self.router.bot_stats.format_url(bot_id))
         return DBLStats(r)
