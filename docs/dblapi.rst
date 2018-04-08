@@ -1,7 +1,7 @@
 API Reference
 ===============
 
-The following section outlines the API of discord.py.
+The following section outlines the API of dblapi.
 
 .. note::
 

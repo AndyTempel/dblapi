@@ -25,3 +25,7 @@ class RequireFormatting(Exception):
 
 class WeirdResponse(Exception):
     pass
+
+
+class InvalidArgument(Exception):
+    pass

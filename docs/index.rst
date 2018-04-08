@@ -25,6 +25,7 @@ Documentation Contents
    :caption: Contents:
 
    dblapi
+   examples
 
 
 Indices and tables

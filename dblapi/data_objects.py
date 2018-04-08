@@ -20,12 +20,33 @@ import dateutil.parser
 
 from .errors import *
 
+VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
+VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+
 
 class Avatar:
     """
     Avatar object for easy to use interface. Get url by simply using :any:`url` method.
     If called as a string outputs .png url. You can get .gif if you use :any:`gif` method and
     you can resize image by using :any:`size` method.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two users are equal.
+
+        .. describe:: x != y
+
+            Checks if two users are not equal.
+
+        .. describe:: hash(x)
+
+            Return the user's hash.
+
+        .. describe:: str(x)
+
+            Returns the user's name with discriminator.
 
     Parameters
     -----------
@@ -40,6 +61,8 @@ class Avatar:
         Avatar hash
     base_url: :class:`str`
         Base URL for avatar image without file suffix.
+    default_avatar_url: :class:`str`
+        Returns URL of default avatar.
     """
 
     def __init__(self, img_hash, bot_id: int):
@@ -48,20 +71,61 @@ class Avatar:
         :param img_hash:
         :param bot_id:
         """
-        self.hash = img_hash
+        self.hash = str(img_hash)
         self.base_url = f"https://cdn.discordapp.com/avatars/{bot_id}/{self.hash}"
+        self.default_avatar_url = f"https://cdn.discordapp.com/embed/avatars/{bot_id % 5}.png"
 
     @property
     def url(self):
         """
-        Returns .png URL of bots/users avatar.
+        Returns URL of bots/users avatar.
+
+        :return: :class:`str`
+            URL of the .webp if avatar is not animated or .gif avatar is animated.
+        """
+        return self.url_as()
+
+    @property
+    def is_avatar_animated(self) -> bool:
+        """
+        Returns True if avatar is animated, False otherwise.
+
+        :return: :class:`bool`
+        """
+        return self.hash.startswith("a_")
+
+    def url_as(self, format: str = None, static_format: str = "webp", size: int = 1024) -> str:
+        if not ((size != 0) and not (size & (size - 1))) and size in range(16, 1025):
+            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not self.is_avatar_animated:
+            raise InvalidArgument("non animated avatars do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+
+        if self.hash is None:
+            return self.default_avatar_url
+
+        if format is None:
+            if self.is_avatar_animated:
+                format = 'gif'
+            else:
+                format = static_format
+
+        gif_fix = '&_=.gif' if format == 'gif' else ''
+        return "{0.base_url}.{1}?size={2}{3}".format(self, format, size, gif_fix)
+
+    def __str__(self):
+        """
+        Same as :any:`url`. Returns .png URL of bots/users avatar.
 
         :return: :class:`str`
             URL of the .png avatar image.
         """
         return self.base_url + ".png"
 
-    def __str__(self):
+    def __get__(self):
         """
         Same as :any:`url`. Returns .png URL of bots/users avatar.
 
@@ -83,7 +147,7 @@ class Avatar:
 
     def size(self, size: int):
         """
-        Returns URL of the resized avatar image as specified.
+        Returns URL of the resized static avatar image as specified.
 
         :param size: :class:`int`
             Size of the image in pixels. Min 16, max 2048.
@@ -161,7 +225,7 @@ class DBLBot:
         Bot Client ID
     username: :class:`str`
         Bot's username
-    discriminator: int
+    discriminator: :class:`int`
         Bot's discriminator
     username_full: :class:`str`
         Full bot's username. Username#1234
@@ -200,6 +264,9 @@ class DBLBot:
 
     def __init__(self, snowflake: str, username: str, discriminator: str, def_avatar: str, lib: str, prefix: str,
                  short_desc: str, tags: list, owners: list, date: str, certified: bool, votes: int, other, client):
+        self._stats_got = False
+        self._stats_obj = None
+
         self.client = client
         self.id = int(snowflake)
         self.username = username
@@ -241,5 +308,11 @@ class DBLBot:
         :return: :class:`DBLStats`
             Returns :class:`DBLStats` object.
         """
-        r = await self.client.http.get(self.client.router.bot_stats.format_url(self.id))
-        return DBLStats(r)
+        if self._stats_got and self._stats_obj:
+            return self._stats_obj
+        else:
+            r = await self.client.http.get(self.client.router.bot_stats.format_url(self.id))
+            obj = DBLStats(r)
+            self._stats_got = True
+            self._stats_obj = obj
+            return obj
