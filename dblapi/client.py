@@ -88,7 +88,7 @@ class Client:
         if not disable_stats:
             self.loop.create_task(self.__update_bot_stats())
 
-        self.cache = Cache(tempfile.gettempdir())
+        # self.cache = Cache(tempfile.gettempdir())
         self.voting_cache = Cacher(self, update_vote_cache, is_dict=False, days=kwargs.get("vote_days", 31))
 
     async def __get_info(self):
